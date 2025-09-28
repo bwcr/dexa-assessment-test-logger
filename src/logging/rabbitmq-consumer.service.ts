@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import * as amqp from 'amqplib';
 import { AllConfigType } from '../config/config.type';
 import { LogEntry } from './domain/log-entry';
+import { LogLevel } from './domain/log-level.enum';
 import { LogEntryRepository } from './infrastructure/persistence/log-entry.repository';
 
 @Injectable()
@@ -50,8 +51,8 @@ export class RabbitMQConsumerService implements OnModuleInit, OnModuleDestroy {
 
       const url = `amqp://${username}:${password}@${host}:${port}${vhost}`;
 
-      this.connection = await amqp.connect(url);
-      this.channel = await this.connection.createChannel();
+      this.connection = (await amqp.connect(url)) as any;
+      this.channel = await (this.connection as any).createChannel();
 
       const exchange = this.configService.getOrThrow('rabbitmq.exchange', {
         infer: true,
@@ -64,16 +65,16 @@ export class RabbitMQConsumerService implements OnModuleInit, OnModuleDestroy {
       });
 
       // Declare exchange
-      await this.channel.assertExchange(exchange, 'direct', { durable: true });
+      await this.channel!.assertExchange(exchange, 'direct', { durable: true });
 
       // Declare queue
-      await this.channel.assertQueue(queue, { durable: true });
+      await this.channel!.assertQueue(queue, { durable: true });
 
       // Bind queue to exchange
-      await this.channel.bindQueue(queue, exchange, routingKey);
+      await this.channel!.bindQueue(queue, exchange, routingKey);
 
       // Set prefetch to process one message at a time
-      await this.channel.prefetch(1);
+      await this.channel!.prefetch(1);
 
       this.logger.log('Successfully connected to RabbitMQ consumer');
     } catch (error) {
@@ -128,6 +129,23 @@ export class RabbitMQConsumerService implements OnModuleInit, OnModuleDestroy {
         logData.timestamp = new Date(logData.timestamp);
       }
 
+      // Normalize log level to lowercase (backend sends uppercase, DB expects lowercase)
+      if (logData.level) {
+        const normalizedLevel = logData.level.toLowerCase();
+        // Validate that the level is one of the expected enum values
+        const validLevels = Object.values(LogLevel);
+        if (validLevels.includes(normalizedLevel as LogLevel)) {
+          logData.level = normalizedLevel;
+        } else {
+          this.logger.warn(
+            `Invalid log level received: ${logData.level}, defaulting to '${LogLevel.INFO}'`,
+          );
+          logData.level = LogLevel.INFO;
+        }
+      } else {
+        logData.level = LogLevel.INFO; // Default level if not provided
+      }
+
       // Create LogEntry domain object
       const logEntry = new LogEntry(logData);
 
@@ -147,13 +165,18 @@ export class RabbitMQConsumerService implements OnModuleInit, OnModuleDestroy {
     try {
       if (this.channel) {
         await this.channel.close();
+        this.channel = null;
       }
       if (this.connection) {
-        await this.connection.close();
+        await (this.connection as any).close();
+        this.connection = null;
       }
       this.logger.log('Disconnected RabbitMQ consumer');
     } catch (error) {
       this.logger.error('Error disconnecting RabbitMQ consumer:', error);
+      // Force cleanup even if close fails
+      this.channel = null;
+      this.connection = null;
     }
   }
 

@@ -45,8 +45,8 @@ export class RabbitMQProducerService implements OnModuleInit, OnModuleDestroy {
 
       const url = `amqp://${username}:${password}@${host}:${port}${vhost}`;
 
-      this.connection = await amqp.connect(url);
-      this.channel = await this.connection.createChannel();
+      this.connection = (await amqp.connect(url)) as any;
+      this.channel = await (this.connection as any).createChannel();
 
       const exchange = this.configService.getOrThrow('rabbitmq.exchange', {
         infer: true,
@@ -59,13 +59,13 @@ export class RabbitMQProducerService implements OnModuleInit, OnModuleDestroy {
       });
 
       // Declare exchange
-      await this.channel.assertExchange(exchange, 'direct', { durable: true });
+      await this.channel!.assertExchange(exchange, 'direct', { durable: true });
 
       // Declare queue
-      await this.channel.assertQueue(queue, { durable: true });
+      await this.channel!.assertQueue(queue, { durable: true });
 
       // Bind queue to exchange
-      await this.channel.bindQueue(queue, exchange, routingKey);
+      await this.channel!.bindQueue(queue, exchange, routingKey);
 
       this.logger.log('Successfully connected to RabbitMQ');
     } catch (error) {
@@ -78,13 +78,18 @@ export class RabbitMQProducerService implements OnModuleInit, OnModuleDestroy {
     try {
       if (this.channel) {
         await this.channel.close();
+        this.channel = null;
       }
       if (this.connection) {
-        await this.connection.close();
+        await (this.connection as any).close();
+        this.connection = null;
       }
       this.logger.log('Disconnected from RabbitMQ');
     } catch (error) {
       this.logger.error('Error disconnecting from RabbitMQ:', error);
+      // Force cleanup even if close fails
+      this.channel = null;
+      this.connection = null;
     }
   }
 

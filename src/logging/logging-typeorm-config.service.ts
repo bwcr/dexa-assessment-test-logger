@@ -9,18 +9,18 @@ export class LoggingTypeOrmConfigService implements TypeOrmOptionsFactory {
 
   createTypeOrmOptions(): TypeOrmModuleOptions {
     return {
-      type: this.configService.get('loggingDatabase.type', { infer: true }),
-      url: this.configService.get('loggingDatabase.url', { infer: true }),
-      host: this.configService.get('loggingDatabase.host', { infer: true }),
-      port: this.configService.get('loggingDatabase.port', { infer: true }),
-      username: this.configService.get('loggingDatabase.username', {
+      type: this.configService.get('database.type', { infer: true }),
+      url: this.configService.get('database.url', { infer: true }),
+      host: this.configService.get('database.host', { infer: true }),
+      port: this.configService.get('database.port', { infer: true }),
+      username: this.configService.get('database.username', {
         infer: true,
       }),
-      password: this.configService.get('loggingDatabase.password', {
+      password: this.configService.get('database.password', {
         infer: true,
       }),
-      database: this.configService.get('loggingDatabase.name', { infer: true }),
-      synchronize: this.configService.get('loggingDatabase.synchronize', {
+      database: this.configService.get('database.name', { infer: true }),
+      synchronize: this.configService.get('database.synchronize', {
         infer: true,
       }),
       dropSchema: false,
@@ -39,26 +39,26 @@ export class LoggingTypeOrmConfigService implements TypeOrmOptionsFactory {
       extra: {
         // based on https://node-postgres.com/apis/pool
         // max connection pool size
-        max: this.configService.get('loggingDatabase.maxConnections', {
+        max: this.configService.get('database.maxConnections', {
           infer: true,
         }),
-        ssl: this.configService.get('loggingDatabase.sslEnabled', {
+        ssl: this.configService.get('database.sslEnabled', {
           infer: true,
         })
           ? {
               rejectUnauthorized: this.configService.get(
-                'loggingDatabase.rejectUnauthorized',
+                'database.rejectUnauthorized',
                 { infer: true },
               ),
               ca:
-                this.configService.get('loggingDatabase.ca', { infer: true }) ??
+                this.configService.get('database.ca', { infer: true }) ??
                 undefined,
               key:
-                this.configService.get('loggingDatabase.key', {
+                this.configService.get('database.key', {
                   infer: true,
                 }) ?? undefined,
               cert:
-                this.configService.get('loggingDatabase.cert', {
+                this.configService.get('database.cert', {
                   infer: true,
                 }) ?? undefined,
             }

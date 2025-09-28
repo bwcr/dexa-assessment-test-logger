@@ -3,7 +3,6 @@ import { AuthConfig } from '../auth/config/auth-config.type';
 import { DatabaseConfig } from '../database/config/database-config.type';
 import { FileConfig } from '../files/config/file-config.type';
 import { MailConfig } from '../mail/config/mail-config.type';
-import { LoggingDatabaseConfig } from '../logging/config/logging-database-config.type';
 import { RabbitMQConfig } from '../logging/config/rabbitmq-config.type';
 
 export type AllConfigType = {
@@ -12,6 +11,5 @@ export type AllConfigType = {
   database: DatabaseConfig;
   file: FileConfig;
   mail: MailConfig;
-  loggingDatabase: LoggingDatabaseConfig;
   rabbitmq: RabbitMQConfig;
 };

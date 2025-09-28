@@ -7,7 +7,6 @@ import authConfig from './auth/config/auth.config';
 import appConfig from './config/app.config';
 import mailConfig from './mail/config/mail.config';
 import fileConfig from './files/config/file.config';
-import loggingDatabaseConfig from './logging/config/logging-database.config';
 import rabbitmqConfig from './logging/config/rabbitmq.config';
 import path from 'path';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -39,7 +38,6 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
         appConfig,
         mailConfig,
         fileConfig,
-        loggingDatabaseConfig,
         rabbitmqConfig,
       ],
       envFilePath: ['.env'],

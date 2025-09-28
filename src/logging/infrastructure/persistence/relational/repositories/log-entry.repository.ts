@@ -11,7 +11,7 @@ import { IPaginationOptions } from '../../../../../utils/types/pagination-option
 @Injectable()
 export class LogEntriesRelationalRepository implements LogEntryRepository {
   constructor(
-    @InjectRepository(LogEntryEntity, 'loggingConnection')
+    @InjectRepository(LogEntryEntity)
     private readonly logEntryRepository: Repository<LogEntryEntity>,
   ) {}
 

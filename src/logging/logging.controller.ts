@@ -15,6 +15,71 @@ export class LoggingController {
     private readonly logEntryRepository: LogEntryRepository,
   ) {}
 
+  @Post('log')
+  @ApiOperation({ summary: 'Create log entry from external services' })
+  @ApiResponse({ status: 201, description: 'Log entry created successfully' })
+  async createLogEntry(
+    @Body()
+    body: {
+      message: string;
+      level?: string;
+      context?: string;
+      metadata?: any;
+      correlationId?: string;
+    },
+  ) {
+    const {
+      message,
+      level = 'info',
+      context = 'ExternalService',
+      metadata,
+      correlationId,
+    } = body;
+
+    const logLevel = level.toUpperCase() as LogLevel;
+
+    switch (logLevel) {
+      case LogLevel.ERROR:
+        await this.loggingService.logError(
+          message,
+          context,
+          metadata,
+          correlationId,
+        );
+        break;
+      case LogLevel.WARN:
+        await this.loggingService.logWarn(
+          message,
+          context,
+          metadata,
+          correlationId,
+        );
+        break;
+      case LogLevel.DEBUG:
+        await this.loggingService.logDebug(
+          message,
+          context,
+          metadata,
+          correlationId,
+        );
+        break;
+      default:
+        await this.loggingService.logInfo(
+          message,
+          context,
+          metadata,
+          correlationId,
+        );
+    }
+
+    return {
+      message: 'Log entry created successfully',
+      level: logLevel,
+      context,
+      correlationId,
+    };
+  }
+
   @Post('test')
   @ApiOperation({ summary: 'Test logging functionality' })
   @ApiResponse({ status: 201, description: 'Log entry created successfully' })

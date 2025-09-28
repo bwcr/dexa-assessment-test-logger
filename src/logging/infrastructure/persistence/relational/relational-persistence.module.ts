@@ -5,7 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { LogEntryEntity } from './entities/log-entry.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([LogEntryEntity], 'loggingConnection')],
+  imports: [TypeOrmModule.forFeature([LogEntryEntity])],
   providers: [
     {
       provide: LogEntryRepository,
